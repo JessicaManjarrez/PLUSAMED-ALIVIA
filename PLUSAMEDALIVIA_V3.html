@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLUSAMED - Inscripciones y Cursos con IA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f9ff; /* Azul muy claro de fondo */
+        }
+        .header-gradient {
+            background-image: linear-gradient(to right, #1e3a8a, #1d4ed8, #2563eb, #3b82f6, #60a5fa); /* Gradiente azul */
+        }
+        .header-title {
+            font-size: 2.8rem; /* Ligeramente más grande */
+            font-weight: 800; /* Más bold */
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        .section-title {
+            font-size: 2rem; /* Más grande y llamativo */
+            font-weight: 700;
+            color: #1e40af; /* Azul medio */
+            border-bottom: 3px solid #2dd4bf; /* Turquesa para el borde inferior */
+            padding-bottom: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 2rem; /* Más padding */
+            margin-bottom: 2rem;
+            border-left: 5px solid #2563eb; /* Acento azul en la tarjeta */
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            transition: transform 0.3s ease-out;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+        }
+        .btn-primary {
+            background-color: #14b8a6; /* Turquesa (teal-500) */
+            color: white;
+            font-weight: 700; /* Más bold */
+            padding: 0.85rem 1.8rem; /* Ligeramente más padding */
+            border-radius: 0.5rem;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .btn-primary:hover {
+            background-color: #0d9488; /* Turquesa más oscuro (teal-600) */
+            transform: translateY(-2px);
+        }
+        .btn-secondary {
+            background-color: #60a5fa; /* Azul claro */
+            color: white;
+            font-weight: 700;
+            padding: 0.85rem 1.8rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .btn-secondary:hover {
+            background-color: #3b82f6; /* Azul medio */
+            transform: translateY(-2px);
+        }
+        .btn-ai {
+            background-color: #f59e0b; /* Naranja/Ámbar (amber-500) */
+            color: white;
+            font-weight: 600;
+            padding: 0.6rem 1.2rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            font-size: 0.9rem;
+        }
+        .btn-ai:hover {
+            background-color: #d97706; /* Naranja más oscuro (amber-600) */
+            transform: translateY(-2px);
+        }
+        .form-input, .form-select, .form-textarea, .form-file-input {
+            border: 1px solid #93c5fd; /* Borde azul claro */
+            border-radius: 0.375rem;
+            padding: 0.75rem 1rem; /* Más padding interno */
+            width: 100%;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            font-size: 1rem; /* Tamaño de fuente base para inputs */
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus, .form-file-input:focus {
+            border-color: #14b8a6; /* Borde turquesa al enfocar */
+            box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.3); /* Sombra turquesa */
+            outline: none;
+        }
+        .form-file-input::file-selector-button {
+            margin-right: 0.75rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            border: 0;
+            font-size: 0.875rem;
+            font-weight: 600;
+            background-color: #ccfbf1; /* Turquesa muy claro (teal-100) */
+            color: #0f766e; /* Turquesa oscuro (teal-700) */
+            transition: background-color 0.2s ease;
+        }
+        .form-file-input::file-selector-button:hover {
+            background-color: #99f6e4; /* Turquesa más claro (teal-200) */
+        }
+        .footer-icon {
+            font-size: 2rem; /* Iconos más grandes */
+            color: #93c5fd; /* Azul claro para iconos */
+            transition: color 0.3s ease, transform 0.2s ease;
+        }
+        .footer-icon:hover {
+            color: #2dd4bf; /* Turquesa al pasar el mouse */
+            transform: scale(1.1);
+        }
+        #successMessage, #errorMessage {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            color: white;
+            padding: 1.25rem 1.75rem; /* Más padding */
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            z-index: 1000;
+            display: none;
+            font-size: 1.1rem; /* Texto más grande */
+        }
+        #successMessage { background-color: #10b981; } /* Verde */
+        #errorMessage { background-color: #ef4444; } /* Rojo */
+
+        .plusamed-info p, .plusamed-info li {
+            font-size: 1.1rem;
+            line-height: 1.7; /* Mayor interlineado */
+            color: #374151; /* Gris oscuro para mejor lectura */
+        }
+        .plusamed-info h3 {
+            color: #1e3a8a; /* Azul oscuro para subtítulos */
+            font-size: 1.5rem; /* Subtítulos más grandes */
+            font-weight: 600;
+        }
+        label {
+            font-weight: 600;
+            color: #1e40af; /* Azul medio */
+            font-size: 1rem; /* Ligeramente más grande */
+        }
+        #geminiSuggestionsArea {
+            margin-top: 1rem;
+            padding: 1.25rem;
+            background-color: #f0fdfa; /* Turquesa extra claro (teal-50) */
+            border-radius: 0.5rem;
+            border: 1px dashed #5eead4; /* Borde turquesa (teal-300) */
+            font-size: 0.95rem;
+            color: #134e4a; /* Turquesa muy oscuro (teal-900) */
+        }
+        #geminiSuggestionsArea h4 {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #0f766e; /* Turquesa oscuro (teal-700) */
+        }
+        #geminiLoading {
+            display: none;
+            text-align: center;
+            padding: 0.75rem;
+            font-style: italic;
+            color: #1e40af;
+            font-size: 1rem;
+        }
+        .footer-gradient {
+             background-image: linear-gradient(to right, #0f766e, #14b8a6, #2dd4bf); /* Gradiente Turquesa */
+        }
+        /* Ajuste para el logo */
+        #logoPlusamed {
+            object-fit: contain; /* Asegura que el logo se vea completo sin distorsión */
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <header class="header-gradient shadow-lg py-8">
+        <div class="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between">
+            <div class="flex items-center mb-4 md:mb-0">
+                <img id="logoPlusamed" src="https://github.com/JessicaManjarrez/PLUSAMEDALIVIA/blob/main/LOGOPLUSAMEDALIVIA.png?raw=true" alt="Logo PLUSAMED ALIVIA" class="h-16 md:h-20 mr-6 rounded">
+                <h1 class="header-title">PLUSAMED</h1>
+            </div>
+            <p class="text-xl text-white font-semibold tracking-wide">Capacitación Innovadora y Consultoría de Vanguardia</p>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 py-10">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+            <section id="info-plusamed" class="plusamed-info">
+                <div class="card">
+                    <h2 class="section-title"><i class="fas fa-landmark mr-3 text-blue-600"></i>Quiénes Somos</h2>
+                    <p class="mb-6">PLUSAMED es una organización líder, dedicada a la capacitación de élite y consultoría especializada en áreas críticas de seguridad y respuesta a emergencias. Nuestro compromiso es potenciar las capacidades de individuos y corporaciones para forjar entornos más seguros y resilientes.</p>
+                    
+                    <h3 class="text-xl font-semibold mb-2">Misión</h3>
+                    <p class="mb-6">Proveer programas de capacitación de excelencia y soluciones integrales en seguridad y emergencias, cultivando una cultura de prevención proactiva y respuesta eficaz para la salvaguarda de vidas y activos.</p>
+
+                    <h3 class="text-xl font-semibold mb-2">Visión</h3>
+                    <p class="mb-6">Ser el referente nacional e internacional en la formación de brigadas de emergencia y consultoría en seguridad, distinguidos por nuestra innovación constante, calidad insuperable y un profundo compromiso con el bienestar social.</p>
+
+                    <h3 class="text-xl font-semibold mb-2">Valores Fundamentales</h3>
+                    <ul class="list-none mb-4 space-y-3">
+                        <li><i class="fas fa-shield-alt mr-2 text-teal-500"></i><strong>Compromiso Total:</strong> Con la seguridad y el desarrollo integral de nuestros clientes.</li>
+                        <li><i class="fas fa-star mr-2 text-teal-500"></i><strong>Excelencia Continua:</strong> En cada interacción, curso y servicio que ofrecemos.</li>
+                        <li><i class="fas fa-handshake mr-2 text-teal-500"></i><strong>Integridad Absoluta:</strong> Actuamos con honestidad, ética y transparencia inquebrantable.</li>
+                        <li><i class="fas fa-lightbulb mr-2 text-teal-500"></i><strong>Innovación Estratégica:</strong> Buscamos y aplicamos constantemente las mejores prácticas y tecnologías.</li>
+                        <li><i class="fas fa-users mr-2 text-teal-500"></i><strong>Responsabilidad Compartida:</strong> Fomentamos la prevención, la preparación y la acción coordinada.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h2 class="section-title"><i class="fas fa-bullseye-arrow mr-3 text-blue-600"></i>Objetivo del Curso: Brigadas de Emergencia Pro</h2>
+                    <p>Formar brigadistas altamente competentes, dotándolos de conocimientos avanzados, habilidades tácticas y destrezas críticas para identificar, prevenir y actuar con máxima eficiencia y coordinación ante un amplio espectro de emergencias (sismos, incendios, evacuaciones estratégicas, primeros auxilios avanzados), minimizando riesgos y asegurando la protección de la vida y los activos organizacionales.</p>
+                </div>
+            </section>
+
+            <section id="inscripcion">
+                <div class="card">
+                    <h2 class="section-title"><i class="fas fa-user-plus mr-3 text-blue-600"></i>Inscríbete Ahora</h2>
+                    <form id="inscripcionForm" class="space-y-6">
+                        <div>
+                            <label for="nombre" class="block text-sm font-medium mb-1">Nombre Completo:</label>
+                            <input type="text" id="nombre" name="nombre" class="form-input" required>
+                        </div>
+
+                        <div>
+                            <label for="fechaNacimiento" class="block text-sm font-medium mb-1">Fecha de Nacimiento:</label>
+                            <input type="date" id="fechaNacimiento" name="fechaNacimiento" class="form-input" required>
+                        </div>
+
+                        <div>
+                            <label for="curso" class="block text-sm font-medium mb-1">Selecciona el curso de tu interés:</label>
+                            <select id="curso" name="curso" class="form-select" required>
+                                <option value="">-- Elige un curso --</option>
+                                <option value="Brigada de Emergencias Pro">Brigada de Emergencias Pro</option>
+                                <option value="Primeros Auxilios Avanzados">Primeros Auxilios Avanzados</option>
+                                <option value="Combate Estratégico contra Incendios">Combate Estratégico contra Incendios</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="modalidad" class="block text-sm font-medium mb-1">Modalidad del curso:</label>
+                            <select id="modalidad" name="modalidad" class="form-select" required>
+                                <option value="Presencial">Presencial (Inmersivo)</option>
+                                <option value="Virtual">Virtual (Interactivo)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="telefono" class="block text-sm font-medium mb-1">Teléfono (10 dígitos):</label>
+                            <input type="tel" id="telefono" name="telefono" class="form-input" maxlength="10" pattern="\d{10}" title="Ingrese 10 dígitos numéricos" oninput="this.value = this.value.replace(/[^0-9]/g, ''); if(this.value.length > 10) this.value = this.value.slice(0,10);" required>
+                        </div>
+
+                        <div>
+                            <label for="email" class="block text-sm font-medium mb-1">Correo Electrónico:</label>
+                            <input type="email" id="email" name="email" class="form-input" required>
+                        </div>
+
+                        <div>
+                            <label for="ciudad" class="block text-sm font-medium mb-1">Ciudad de Residencia:</label>
+                            <input type="text" id="ciudad" name="ciudad" class="form-input" required>
+                        </div>
+
+                        <div>
+                            <label for="estado" class="block text-sm font-medium mb-1">Estado:</label>
+                            <select id="estado" name="estado" class="form-select" required>
+                                <option value="">-- Seleccione un estado --</option>
+                                </select>
+                        </div>
+                        
+                        <div>
+                            <label for="comentarios" class="block text-sm font-medium mb-1">Comentarios Adicionales (opcional):</label>
+                             <textarea id="comentarios" name="comentarios" rows="3" class="form-textarea"></textarea>
+                        </div>
+                        
+                        <div class="flex items-end space-x-3">
+                            <div class="flex-grow">
+                                <label for="cv" class="block text-sm font-medium mb-1">Adjuntar CV (PDF, DOC, DOCX, TXT):</label>
+                                <input type="file" id="cv" name="cv" class="form-file-input" accept=".pdf,.doc,.docx,.txt" required>
+                            </div>
+                            <button type="button" id="suggestTopicsBtn" class="btn-ai flex-shrink-0 mb-1 self-end">
+                                <i class="fas fa-wand-magic-sparkles mr-2"></i>Sugerir Temas
+                            </button>
+                        </div>
+
+                        <div id="geminiLoading">Analizando tu curso... <i class="fas fa-brain fa-beat ml-1"></i></div>
+                        <div id="geminiSuggestionsArea" style="display: none;">
+                            <h4><i class="fas fa-lightbulb mr-2"></i>Temas Clave Sugeridos por IA:</h4>
+                            <ul id="geminiSuggestionsList" class="list-disc list-inside ml-4 space-y-1"></ul>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 pt-4">
+                            <button type="submit" class="btn-primary w-full sm:w-auto flex items-center justify-center">
+                                <i class="fas fa-paper-plane mr-2"></i>Confirmar Inscripción
+                            </button>
+                            <button type="button" id="exportPdfBtn" class="btn-secondary w-full sm:w-auto flex items-center justify-center">
+                                <i class="fas fa-file-pdf mr-2"></i>Exportar Recibo
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="footer-gradient text-white py-10 mt-12">
+        <div class="container mx-auto px-6 text-center">
+            <p class="mb-6 text-xl font-semibold">¡Conéctate con PLUSAMED!</p>
+            <div class="flex justify-center space-x-6 sm:space-x-8 mb-8">
+                <a href="https://facebook.com/plusamed" target="_blank" aria-label="Facebook" class="footer-icon"><i class="fab fa-facebook-square"></i></a>
+                <a href="https://instagram.com/plusamed" target="_blank" aria-label="Instagram" class="footer-icon"><i class="fab fa-instagram-square"></i></a>
+                <a href="https://tiktok.com/@plusamed" target="_blank" aria-label="TikTok" class="footer-icon"><i class="fab fa-tiktok"></i></a>
+                <a href="https://linkedin.com/company/plusamed" target="_blank" aria-label="LinkedIn" class="footer-icon"><i class="fab fa-linkedin"></i></a>
+            </div>
+            <a href="https://wa.me/525574363499" target="_blank" class="inline-block bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-300 transform hover:scale-105">
+                <i class="fab fa-whatsapp mr-2"></i>Contactar por WhatsApp
+            </a>
+            <p class="mt-8 text-sm text-teal-100">&copy; <span id="currentYear"></span> PLUSAMED Global Training. Todos los derechos reservados.</p>
+            </div>
+    </footer>
+
+    <div id="successMessage" class="items-center"> <i class="fas fa-check-circle mr-2"></i><span></span>
+    </div>
+    <div id="errorMessage" class="items-center"> <i class="fas fa-exclamation-circle mr-2"></i><span></span>
+    </div>
+
+    <script>
+        // Asegurarse de que jsPDF está cargado
+        const { jsPDF } = window.jspdf;
+
+        // Elementos del DOM
+        const estadoSelect = document.getElementById('estado');
+        const currentYearSpan = document.getElementById('currentYear');
+        const form = document.getElementById('inscripcionForm');
+        const successMessageDiv = document.getElementById('successMessage');
+        const errorMessageDiv = document.getElementById('errorMessage');
+        const exportPdfBtn = document.getElementById('exportPdfBtn');
+        const suggestTopicsBtn = document.getElementById('suggestTopicsBtn');
+        const geminiLoadingDiv = document.getElementById('geminiLoading');
+        const geminiSuggestionsArea = document.getElementById('geminiSuggestionsArea');
+        const geminiSuggestionsList = document.getElementById('geminiSuggestionsList');
+        const cursoSelect = document.getElementById('curso');
+        const cvInput = document.getElementById('cv');
+
+        // Estados de México
+        const estadosMexico = [
+            'Aguascalientes', 'Baja California', 'Baja California Sur', 'Campeche', 'Chiapas', 
+            'Chihuahua', 'Coahuila', 'Colima', 'Ciudad de México', 'Durango', 'Estado de México', 'Guanajuato', 
+            'Guerrero', 'Hidalgo', 'Jalisco', 'Michoacán', 'Morelos', 'Nayarit', 'Nuevo León', 
+            'Oaxaca', 'Puebla', 'Querétaro', 'Quintana Roo', 'San Luis Potosí', 'Sinaloa', 
+            'Sonora', 'Tabasco', 'Tamaulipas', 'Tlaxcala', 'Veracruz', 'Yucatán', 'Zacatecas'
+        ];
+
+        estadosMexico.forEach(estado => {
+            const option = document.createElement('option');
+            option.value = estado;
+            option.textContent = estado;
+            estadoSelect.appendChild(option);
+        });
+
+        currentYearSpan.textContent = new Date().getFullYear();
+
+        function showMessage(type, message, duration = 4000) {
+            const div = type === 'success' ? successMessageDiv : errorMessageDiv;
+            div.querySelector('span').textContent = message;
+            div.style.display = 'flex'; 
+            setTimeout(() => {
+                div.style.display = 'none';
+            }, duration);
+        }
+
+        form.addEventListener('submit', function(event) {
+            event.preventDefault(); 
+            if (cvInput.files.length === 0 && cvInput.required) { // Doble chequeo aunque HTML5 lo haga
+                 showMessage('error', 'Por favor, adjunte su CV para completar la inscripción.');
+                 return;
+            }
+            // Simulación de envío de datos
+            console.log("Formulario enviado con los siguientes datos:");
+            const formDataForLog = new FormData(form);
+            for (let [key, value] of formDataForLog.entries()) {
+                if (value instanceof File) {
+                    console.log(`${key}: ${value.name} (tipo: ${value.type}, tamaño: ${value.size} bytes)`);
+                } else {
+                    console.log(`${key}: ${value}`);
+                }
+            }
+
+            showMessage('success', '¡Inscripción confirmada! Hemos recibido tus datos.');
+            form.reset();
+            geminiSuggestionsArea.style.display = 'none';
+            geminiSuggestionsList.innerHTML = '';
+        });
+
+        exportPdfBtn.addEventListener('click', function() {
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            const cvFile = cvInput.files[0];
+
+            let formIsValid = true;
+            // Chequeo de campos requeridos por JS, además del 'required' de HTML
+            form.querySelectorAll('[required]').forEach(input => {
+                if (!input.value && input.type !== 'file') { // Para inputs de texto, select, etc.
+                    formIsValid = false;
+                } else if (input.type === 'file' && input.files.length === 0) { // Para input de archivo
+                     formIsValid = false;
+                }
+            });
+            
+            if (!formIsValid) {
+                 showMessage('error', "Por favor, complete todos los campos obligatorios del formulario antes de exportar.");
+                 return;
+            }
+
+            try {
+                const doc = new jsPDF();
+                doc.setFontSize(20);
+                doc.setTextColor(40, 58, 138); 
+                doc.text("Recibo de Inscripción PLUSAMED", 105, 25, null, null, 'center');
+                
+                doc.setFontSize(12);
+                doc.setTextColor(55, 65, 81); 
+                let yPos = 45;
+                const lineHeight = 9;
+                const leftMargin = 20;
+                const valueMargin = 70;
+
+                function addLine(label, value) {
+                    if (value || value === 0) { // Considerar 0 como valor válido
+                        doc.setFont("helvetica", "bold");
+                        doc.text(label + ":", leftMargin, yPos);
+                        doc.setFont("helvetica", "normal");
+                        const splitValue = doc.splitTextToSize(String(value), doc.internal.pageSize.width - valueMargin - leftMargin - 5);
+                        doc.text(splitValue, valueMargin, yPos);
+                        yPos += (splitValue.length * lineHeight);
+                    } else {
+                         yPos += lineHeight; 
+                    }
+                }
+
+                addLine("Nombre Completo", data.nombre);
+                addLine("Fecha de Nacimiento", data.fechaNacimiento);
+                addLine("Curso Inscrito", data.curso);
+                addLine("Modalidad", data.modalidad);
+                addLine("Teléfono", data.telefono);
+                addLine("Correo Electrónico", data.email);
+                addLine("Ciudad", data.ciudad);
+                addLine("Estado", data.estado);
+                if (cvFile) {
+                    addLine("CV Adjunto", cvFile.name + ` (${(cvFile.size / 1024).toFixed(2)} KB)`);
+                } else {
+                    addLine("CV Adjunto", "No adjuntado");
+                }
+                
+                if (data.comentarios) { 
+                    doc.setFont("helvetica", "bold");
+                    doc.text("Comentarios Adicionales:", leftMargin, yPos);
+                    yPos += lineHeight;
+                    doc.setFont("helvetica", "normal");
+                    const splitComentarios = doc.splitTextToSize(data.comentarios, doc.internal.pageSize.width - leftMargin * 2);
+                    doc.text(splitComentarios, leftMargin, yPos);
+                    yPos += (splitComentarios.length * lineHeight);
+                }
+
+                yPos += lineHeight * 2;
+                doc.setFontSize(11);
+                doc.setTextColor(20, 184, 166); 
+                doc.text("¡Gracias por confiar en PLUSAMED para tu desarrollo profesional!", 105, yPos, null, null, 'center');
+
+                doc.save(`Recibo_PLUSAMED_${data.nombre.replace(/\s+/g, '_')}.pdf`);
+            } catch (error) {
+                console.error("Error al generar PDF:", error);
+                showMessage('error', "Hubo un problema al generar el PDF. Inténtalo de nuevo.");
+            }
+        });
+
+        suggestTopicsBtn.addEventListener('click', async function() {
+            const selectedCourse = cursoSelect.value;
+            if (!selectedCourse) {
+                showMessage('error', 'Por favor, selecciona un curso para obtener sugerencias.');
+                return;
+            }
+
+            geminiLoadingDiv.style.display = 'block';
+            geminiSuggestionsArea.style.display = 'none';
+            geminiSuggestionsList.innerHTML = ''; 
+
+            const prompt = `Eres un asistente experto en diseño curricular para capacitación en emergencias y seguridad. 
+            Para un curso avanzado llamado "${selectedCourse}", sugiere entre 3 y 5 módulos o temas clave que serían esenciales y atractivos para profesionales que buscan especialización.
+            Presenta cada tema como un punto en una lista, usando un lenguaje profesional y motivador. Por ejemplo: "- Dominio Táctico de Escenarios Críticos".`;
+
+            let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+            const payload = { contents: chatHistory };
+            const apiKey = ""; 
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`Error de API Gemini: ${errorData.error?.message || response.statusText}`);
+                }
+
+                const result = await response.json();
+
+                if (result.candidates && result.candidates[0]?.content?.parts?.[0]?.text) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    const topics = text.split('\n')
+                                       .map(topic => topic.trim().replace(/^[\*\-]\s*/, '')) 
+                                       .filter(topic => topic.length > 0);
+                    
+                    if (topics.length > 0) {
+                        topics.forEach(topic => {
+                            const li = document.createElement('li');
+                            li.textContent = topic;
+                            geminiSuggestionsList.appendChild(li);
+                        });
+                        geminiSuggestionsArea.style.display = 'block';
+                    } else {
+                        throw new Error('La IA no devolvió temas en el formato esperado.');
+                    }
+                } else {
+                    throw new Error('Respuesta inesperada o vacía de la API de Gemini.');
+                }
+
+            } catch (error) {
+                console.error('Error al llamar a Gemini API:', error);
+                showMessage('error', `No se pudieron obtener sugerencias: ${error.message}`);
+                geminiSuggestionsArea.style.display = 'none';
+            } finally {
+                geminiLoadingDiv.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
